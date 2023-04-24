@@ -1,6 +1,7 @@
 package com.projet9.Note.Controller;
 
 import com.projet9.Note.Domain.Note;
+import com.projet9.Note.Domain.NoteDTO;
 import com.projet9.Note.Service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,7 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins="http://localhost:8080")
+@CrossOrigin(origins="http://localhost:4200")
+
 public class NoteController {
 
     @Autowired
@@ -35,7 +37,7 @@ public class NoteController {
         return noteService.findAllNotes();}
 
 
-    @DeleteMapping("/delete/note/{id}")
+    @DeleteMapping("/note/delete/{id}")
     @ResponseStatus(code = HttpStatus.OK)
     public void deleteNoteById(@PathVariable long id){
        noteService.deleteNote(id);
@@ -43,8 +45,22 @@ public class NoteController {
 
     @PostMapping("/note")
     @ResponseStatus(code = HttpStatus.OK)
-    public void newNote(@RequestBody Note note){
+    public void newNote(@RequestBody NoteDTO notedto){
+        Note note = new Note();
+        note.setIdPatient(notedto.getIdPatient());
+        note.setMessage(notedto.getMessage());
+        note.setMessageDate(new Date());
         noteService.newNote(note);
+    }
+
+    @PutMapping(path = "/note/update", consumes= MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(code=HttpStatus.OK)
+    public void updatePatientWithId(@RequestBody Note note) {
+        Optional<Note> noteToUpdate = noteService.findNote(note.getIdNote());
+        if(noteToUpdate.isPresent()) {
+            noteToUpdate.get().setMessage(note.getMessage());
+            noteService.updatePatientData(noteToUpdate.get());
+        }
     }
 
     @PostMapping("/patHistory/add")
@@ -68,8 +84,5 @@ public class NoteController {
         noteService.newNote(noteObject);
     }
 
-    @PutMapping(path = "/note/update", consumes= MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(code=HttpStatus.OK)
-    public Note updatePatientWithId(@RequestBody Note note) {return noteService.updatePatientData(note);
-    }
+
 }
